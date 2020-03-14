@@ -1,9 +1,25 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express')
+const router = express.Router()
+const controllers = require('../controllers/static-pages')
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
+  res.render('institutionList', { title: 'Express' })
+})
+router.get('/about', function(req, res, next) {
+  res.render('about', { title: 'Express' })
+})
+router.get('/opensource', function(req, res, next) {
+  res.render('openSource', { title: 'Express' })
+})
+router.get('/register', function(req, res, next) {
+  res.render('registerInstitution', { title: 'Express' })
+})
+router.get('/admin', function(req, res, next) {
+  res.render('adminLogin', { title: 'Express' })
+})
+router.get('/contact', function(req, res, next) {
+  res.render('contact', { title: 'Express' })
+})
 
-module.exports = router;
+module.exports = router
