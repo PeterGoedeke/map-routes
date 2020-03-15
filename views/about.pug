@@ -1,6 +1,10 @@
 extends layout
 
 block content
-  h1= message
-  h2= error.status
-  pre #{error.stack}
+  button(onclick="getLocation()").btn Click me
+  .badge Your location should be below:
+  .hello
+  .badge.test
+
+block scripts
+  script(src='/javascripts/location.js')
