@@ -41,3 +41,42 @@ function onLocationFound(e) {
     }
     if(marker) marker.setLatLng(e.latlng)
 }
+
+
+const geoJsonPoly = {
+    type: "Feature",
+    properties: {
+        name: "Test"
+    },
+    geometry: {
+        type: "LineString",
+        coordinates: [
+        ]
+    }
+}
+
+const myLayer = L.geoJSON().addTo(map)
+myLayer.addData([testJson, test2Json])
+L.geoJSON([testJson, test2Json]).addTo(map)
+
+map.on('click', function(ev){
+    var latlng = map.mouseEventToLatLng(ev.originalEvent);
+    geoJsonPoly.geometry.coordinates.push([latlng.lng, latlng.lat])
+    myLayer.clearLayers()
+
+    let one
+    let two
+    if(geoJsonPoly.geometry.coordinates.length) {
+        one = L.latLng(geoJsonPoly.geometry.coordinates[0])
+        two = L.latLng(geoJsonPoly.geometry.coordinates[geoJsonPoly.geometry.coordinates.length - 1])
+    }
+
+    console.log(one.equals(two))
+    if(one.equals(two, 0.00001) && geoJsonPoly.geometry.coordinates.length > 2) {
+        geoJsonPoly.geometry.coordinates[geoJsonPoly.geometry.coordinates.length - 1] = geoJsonPoly.geometry.coordinates[0]
+        geoJsonPoly.geometry.type = 'Polygon'
+        geoJsonPoly.geometry.coordinates = [geoJsonPoly.geometry.coordinates]
+    }
+    
+    myLayer.addData(geoJsonPoly)
+  });
