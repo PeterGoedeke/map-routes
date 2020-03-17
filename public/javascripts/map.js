@@ -1,4 +1,6 @@
-const map = L.map('map').setView([51.505, -0.09], 13)
+const map = L.map('map', {
+    drawControl: true
+}).setView([51.505, -0.09], 13)
 
 L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={token}', {
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -56,27 +58,48 @@ const geoJsonPoly = {
 }
 
 const myLayer = L.geoJSON().addTo(map)
-myLayer.addData([testJson, test2Json])
-L.geoJSON([testJson, test2Json]).addTo(map)
 
-map.on('click', function(ev){
-    var latlng = map.mouseEventToLatLng(ev.originalEvent);
-    geoJsonPoly.geometry.coordinates.push([latlng.lng, latlng.lat])
-    myLayer.clearLayers()
+// map.on('click', function(ev) {
+//     var latlng = map.mouseEventToLatLng(ev.originalEvent);
+//     geoJsonPoly.geometry.coordinates.push([latlng.lng, latlng.lat])
+//     myLayer.clearLayers()
 
-    let one
-    let two
-    if(geoJsonPoly.geometry.coordinates.length) {
-        one = L.latLng(geoJsonPoly.geometry.coordinates[0])
-        two = L.latLng(geoJsonPoly.geometry.coordinates[geoJsonPoly.geometry.coordinates.length - 1])
-    }
+//     let one
+//     let two
+//     if(geoJsonPoly.geometry.coordinates.length) {
+//         one = L.latLng(geoJsonPoly.geometry.coordinates[0])
+//         two = L.latLng(geoJsonPoly.geometry.coordinates[geoJsonPoly.geometry.coordinates.length - 1])
+//     }
 
-    console.log(one.equals(two))
-    if(one.equals(two, 0.00001) && geoJsonPoly.geometry.coordinates.length > 2) {
-        geoJsonPoly.geometry.coordinates[geoJsonPoly.geometry.coordinates.length - 1] = geoJsonPoly.geometry.coordinates[0]
-        geoJsonPoly.geometry.type = 'Polygon'
-        geoJsonPoly.geometry.coordinates = [geoJsonPoly.geometry.coordinates]
-    }
+//     console.log(one.equals(two))
+//     if(one.equals(two, 0.00001) && geoJsonPoly.geometry.coordinates.length > 2) {
+//         geoJsonPoly.geometry.coordinates[geoJsonPoly.geometry.coordinates.length - 1] = geoJsonPoly.geometry.coordinates[0]
+//         geoJsonPoly.geometry.type = 'Polygon'
+//         geoJsonPoly.geometry.coordinates = [geoJsonPoly.geometry.coordinates]
+//     }
     
-    myLayer.addData(geoJsonPoly)
-  });
+//     myLayer.addData(geoJsonPoly)
+//   });
+
+var drawnItems = new L.FeatureGroup();
+map.addLayer(drawnItems);
+var drawControl = new L.Control.Draw({
+    edit: {
+        featureGroup: drawnItems
+    }
+});
+map.addControl(drawControl);
+
+map.on(L.Draw.Event.CREATED, function (e) {
+    const layer = e.layer
+    layer.on("click", function (e) {
+        const popup = new L.popup()
+        var bounds = layer.getBounds();
+        var popupContent = "popup content here";
+        popup.setLatLng(bounds.getCenter());
+        popup.setContent(popupContent);
+        map.openPopup(popup);
+    });
+
+    map.addLayer(layer);
+ });
