@@ -11,6 +11,15 @@ const nodeProto = {
     },
     isOnTopOf(node) {
         return this.distanceFrom(node) < distanceEpsilon
+    },
+    getGCost(start) {
+        return this.distanceFrom(start)
+    },
+    getHCost(end) {
+        return this.distanceFrom(end)
+    },
+    getFCost() {
+        return this.getGCost() + this.getHCost()
     }
 }
 /**
@@ -77,7 +86,76 @@ const graphProto = {
             }
         }
         return currentBestNode
+    },
+    /**
+     * Extremely inefficient implementation of the A* algorithm. Redesign will be needed; this implementation is suitable only for 
+     * development. The main drawback currently is that arrays are being used due to the JavaScript Map's inability to convert to JSON.
+     * A workaround to this will need to be found at a later stage.
+     * @param {Node} startCoords The node to start at
+     * @param {Node} endCoords The node to end at
+     */
+    routeBetween(startCoords, endCoords) {
+        const startNode = this.findNearest(startCoords)
+        const endNode = this.findNearest(endCoords)
+
+        if(!startNode || !endNode) return false
+
+        const gCost = startNode.getGCost(startNode)
+        const hCost = startNode.getHCost(endNode) 
+        // this data structure can be impoved by using a heap
+        const open = [{
+            node: startNode,
+            gCost,
+            hCost,
+            fCost: gCost + hCost
+        }]
+        // this should be a map
+        const closed = []
+        while(open.length > 0) {
+            let current = open[0]
+            for(let i = open.length - 1; i >= 0; i--) {
+                if(open[i].fCost < current.fCost) {
+                    current = open[i]
+                    closed.push(open.splice(i, 1))
+                }
+            }
+            if(current.node === endNode) {
+                return current
+            }
+            
+            neighbours:
+            for(const connection of current.node.connections) {
+                const neighbour = connection.node
+                // if closed was a map then this would be more efficient
+                for(const elem of closed) {
+                    if(elem === neighbour) continue neighbours
+                }
+                // if open was a map then this would be more efficient
+                for(const elem of open) {
+                    if(elem.node === neighbour) {
+                        const gCost = neighbour.distanceFrom(current.node) + current.gCost
+                        const hCost = neighbour.getHCost(endNode)
+                        if(elem.fCost < gCost + hCost) {
+                            elem.fCost = gCost + hCost
+                            elem.parent = current
+                        }
+                        continue neighbours
+                    }
+                }
+                const gCost = neighbour.distanceFrom(current.node) + current.gCost
+                const hCost = neighbour.getHCost(endNode)
+                open.push({
+                    node: neighbour,
+                    parent: current,
+                    gCost,
+                    hCost,
+                    fCost: gCost + hCost
+                })
+            }
+        }
+        return null
     }
+
 }
 function createGraph() {
     const graph = Object.create(graphProto)
@@ -87,10 +165,11 @@ function createGraph() {
 
 // example usage
 const graph = createGraph()
-const nodeA = createNode('A')
-const nodeB = createNode('B')
-const nodeC = createNode('C')
-const nodeD = createNode('D')
+const nodeA = createNode(Math.random(), Math.random(), {l: 'A'})
+const nodeB = createNode(Math.random(), Math.random(), {l: 'B'})
+const nodeC = createNode(Math.random(), Math.random(), {l: 'C'})
+const nodeD = createNode(Math.random(), Math.random(), {l: 'D'})
+
 graph.addVertex(nodeA)
 graph.addVertex(nodeB)
 graph.addVertex(nodeC)
@@ -99,8 +178,15 @@ graph.connectVertices(nodeA, nodeB)
 graph.connectVertices(nodeB, nodeD)
 graph.connectVertices(nodeA, nodeC)
 graph.connectVertices(nodeD, nodeB)
-graph.removeVerex(nodeA)
+// graph.removeVerex(nodeA)
 
-graph.findNearest(nodeA)
+// graph.findNearest(nodeA)
 
-console.log(graph)
+const current = graph.routeBetween(nodeA, nodeD)
+console.log(current)
+console.log('---------')
+console.log(current.parent)
+console.log('---------')
+console.log(current.parent.parent)
+
+// console.log(graph)
