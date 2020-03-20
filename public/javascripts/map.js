@@ -90,6 +90,7 @@ var drawControl = new L.Control.Draw({
 });
 map.addControl(drawControl);
 
+const polys = []
 map.on(L.Draw.Event.CREATED, function (e) {
     const layer = e.layer
     layer.on("click", function (e) {
@@ -100,6 +101,40 @@ map.on(L.Draw.Event.CREATED, function (e) {
         popup.setContent(popupContent);
         map.openPopup(popup);
     });
-
+    polys.push(e)
     map.addLayer(layer);
  });
+
+ function zoomToFeature(e) {
+    map.fitBounds(e.target.getBounds());
+}
+
+document.querySelector('.search').addEventListener('keypress', event => {
+    event.preventDefault()
+    if(event.which == 13) {
+        console.log(polys)
+    }
+})
+
+
+var xhr = new XMLHttpRequest()
+xhr.open('GET', '/map/path', true)
+xhr.send()
+
+xhr.onload = function () {
+    console.log(xhr.responseText)
+    const geoJSONPoly = {
+        type: "Feature",
+        properties: {
+            name: "Test"
+        },
+        geometry: {
+            type: "LineString",
+            coordinates: [
+            ]
+        }
+    }
+    geoJSONPoly.geometry = JSON.parse(xhr.responseText)
+    
+    L.geoJSON(geoJSONPoly, {}).addTo(map)
+}
