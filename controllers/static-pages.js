@@ -1,5 +1,9 @@
-function institutionList(req, res) {
+const institutionManager = require('./institutionManager.js')
 
+function institutionList(req, res) {
+    const institutions = institutionManager.getList()
+
+    res.render('institutionList.pug', { institutions: institutions })
 }
 function aboutUs(req, res) {
 
