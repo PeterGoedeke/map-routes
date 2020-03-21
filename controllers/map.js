@@ -1,30 +1,44 @@
-const graph = require('./graph.js')
+const institutionManager = require('./institutionManager.js')
 
-const map = graph.create()
-const nodeA = graph.node(Math.random(), Math.random(), {l: 'A'})
-const nodeB = graph.node(Math.random(), Math.random(), {l: 'B'})
-const nodeC = graph.node(Math.random(), Math.random(), {l: 'C'})
-const nodeD = graph.node(Math.random(), Math.random(), {l: 'D'})
-
-map.addVertex(nodeA)
-map.addVertex(nodeB)
-map.addVertex(nodeC)
-map.addVertex(nodeD)
-map.connectVertices(nodeA, nodeB)
-map.connectVertices(nodeB, nodeD)
-map.connectVertices(nodeA, nodeC)
-map.connectVertices(nodeD, nodeB)
-
-function getPath(req, res) {
-    const path = map.routeBetween(nodeA, nodeD)
-    return res.json(path)
-}
-
+/**
+ * Renders the 'map.pug' file
+ * @param {Object} req The request object
+ * @param {Object} res The response object
+ */
 function getMap(req, res) {
     res.render('map')
 }
+/**
+ * Asks the institution manager for the set of geoJSON buildings for a specific institution.
+ * Returns the objects to the client on success, or null if anything goes wrong.
+ * @param {Object} req The request object
+ * @param {Object} res The response object
+ */
+function getBuildings(req, res) {
+    if(!req.params.institution) return null
+    const {institution} = req.params
+
+    const buildings = institutionManager.getBuildings(institution)
+    return res.json(buildings)
+}
+/**
+ * Asks the institution manager for the fastest route between two coordinates for a specific institution.
+ * Returns the LineString geoJSON to the client on success, or null if anything goes wrong.
+ * @param {Object} req The request object
+ * @param {Object} res The response object
+ */
+function routeBetween(req, res) {
+    const q = req.query
+    if(!q.lat1 || !q.lat2 || !q.lng1 || !q.lng2 || !q.institution) return null
+
+    const {lat1, lat2, lng1, lng2, institution} = req.query
+
+    const path = institutionManager.routeBetween([lat1, lng1], [lat2, lng2], institution)
+    return res.json(path)
+}
 
 module.exports = {
-    getPath,
-    getMap
+    getMap,
+    getBuildings,
+    routeBetween,
 }
