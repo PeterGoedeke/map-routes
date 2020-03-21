@@ -8,17 +8,9 @@ block headerSrc
   script(src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.js")
 
 block page
-  - const navElements = {'About us': 'about', 'Open source': 'opensource', 'Register': 'register', 'Admin': 'admin', 'Contact us': 'contact'}
-  .wrapper(style="height: 100vh; position: relative;")
-    nav(style="z-index: 5").navbar.navbar-expand-sm.bg-dark.navbar-dark.py-0.py-md-0
-      a(href='/').navbar-brand Routes
-
-      button(type="button" data-toggle="collapse" data-target="#navbarCollapse").navbar-toggler
-        span.navbar-toggler-icon
-      
-      #navbarCollapse.collapse.navbar-collapse
-        ul.navbar-nav
-          each val, index in navElements
-            li.nav-item
-              a(href=val).nav-link= index
-    block map
+  nav(style="z-index: 5").navbar.navbar-expand-sm.bg-dark.navbar-dark.py-0.py-md-0
+    a(href='/').navbar-brand Routes
+    form(action="").form-inline
+      input(type="text" placeholder="search" style="height: calc((1.5em + .75rem + 2px) / 1.5)").form-control.mr-sm-2.py-0.search
+      input(type="submit").btn.btn-success.py-0
+  block map
