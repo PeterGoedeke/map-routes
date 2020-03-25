@@ -1,11 +1,6 @@
+const warn = require('../warn.js')
+
 const graphMapProto = (function () {
-    /**
-     * Prints a message to the node.js console with a red background. Should be used for errors.
-     * @param {String} message The message to print to the console
-     */
-    function warn(message) {
-        console.log('\x1b[41m%s\x1b[0m', message)
-    }
     /**
      * If the coordinate pair provided is an array, convert to a string for the purposes of map indexing.
      * @param {any} latLng The coordinate pair
@@ -234,23 +229,25 @@ function createGraphMap() {
     return graphMap
 }
 
-const test = createGraphMap()
-test.addVertex([10, 0], {letter: 'A'})
-test.addVertex([10, 20], {letter: 'B'})
-test.addVertex([0, 0], {letter: 'C'})
-test.addVertex([0, 20], {letter: 'D'})
-test.addVertex([5, 10], {letter: 'E'})
-// test.addVertex([1, 5], {letter: 'E'})
-test.addEdge([10, 0], [10, 20])
-test.addEdge([10, 20], [0, 20])
-test.addEdge([0, 20], [0, 0])
-test.addEdge([10, 0], [0, 0])
-test.addEdge([10, 0], [5, 10])
-test.addEdge([0, 20], [5, 10])
-// test.updateVertexProperties([1, 1], {letter: 'J'})
-// test.deleteVertex([1, 4])
-console.log(JSON.stringify(test, null, 4))
+// const test = createGraphMap()
+// test.addVertex([10, 0], {letter: 'A'})
+// test.addVertex([10, 20], {letter: 'B'})
+// test.addVertex([0, 0], {letter: 'C'})
+// test.addVertex([0, 20], {letter: 'D'})
+// test.addVertex([5, 10], {letter: 'E'})
+// // test.addVertex([1, 5], {letter: 'E'})
+// test.addEdge([10, 0], [10, 20])
+// test.addEdge([10, 20], [0, 20])
+// test.addEdge([0, 20], [0, 0])
+// test.addEdge([10, 0], [0, 0])
+// test.addEdge([10, 0], [5, 10])
+// test.addEdge([0, 20], [5, 10])
+// // test.updateVertexProperties([1, 1], {letter: 'J'})
+// // test.deleteVertex([1, 4])
+// console.log(JSON.stringify(test, null, 4))
 
-console.log(test.fastestRouteBetween([0, 0], [5, 10]))
+// console.log(test.fastestRouteBetween([0, 0], [5, 10]))
 
-module.exports = createGraphMap()
+module.exports = {
+    create: createGraphMap
+}
