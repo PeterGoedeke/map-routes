@@ -60,7 +60,7 @@ const graphMapProto = (function () {
          * @param {any} latLng The coordinate pair
          * @param {Object} properties The properties of the new node
          */
-        addVertex(latLng, properties) {
+        addVertex(latLng, properties = {}) {
             latLng = toKey(latLng)
             if(this.nodes[latLng]) warn(`Node at ${latLng} overwritten.`)
             this.nodes[latLng] = {
