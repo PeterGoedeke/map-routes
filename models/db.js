@@ -2,7 +2,10 @@ const mongoose = require('mongoose')
 const warn = require('../warn.js')
 
 const dbURI = 'mongodb://localhost/map-routes'
-mongoose.connect(dbURI, { useNewUrlParser: true })
+mongoose.connect(dbURI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
 
 mongoose.connection.on('connected', () => {
     console.log(`Mongoose connected to ${dbURI}`)
@@ -40,3 +43,4 @@ process.on('SIGTERM', () => {
         process.exit(0)
     })
 })
+

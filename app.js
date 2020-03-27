@@ -4,6 +4,8 @@ const path = require('path')
 const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 
+require('./models/db.js')
+
 const indexRouter = require('./routes/index')
 const mapRouter = require('./routes/map')
 
