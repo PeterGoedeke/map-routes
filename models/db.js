@@ -44,3 +44,4 @@ process.on('SIGTERM', () => {
     })
 })
 
+require('./institution')
