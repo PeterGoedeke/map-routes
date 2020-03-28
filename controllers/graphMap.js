@@ -142,8 +142,11 @@ const graphMapProto = (function () {
          */
         fastestRouteBetween(startCoords, endCoords) {
             if(!startCoords || !endCoords) {
-                warn(`Pathfinding could not be undertaken as ${startCoords} or ${endCoords} does not exist.`)
-                return
+                return {
+                    failed: 'coordsIssue',
+                    message:
+                    `Pathfinding could not be undertaken as ${startCoords} or ${endCoords} does not exist.`
+                }
             }
             // if the coordinates given are not node coordinates, then find the nearest nodes to the coordinates to use instead
             startCoords = toKey(startCoords)
@@ -152,8 +155,10 @@ const graphMapProto = (function () {
             if(!this.nodes[endCoords]) startCoords = this.getNearestNode(endCoords)
 
             if(startCoords == endCoords) {
-                warn(`Pathfinding could not be undertaken as the start and end location are the same: ${startCoords}.`)
-                return
+                return {
+                    failed: 'duplicationIssue',
+                    message: `Pathfinding could not be undertaken as the start and end location are the same: ${startCoords}.`
+                }
             }
             // open and closed lists (implemented as "maps") for the A* algorithm
             let openLength = 0 // more efficient to keep tabs than run Object.keys
@@ -187,8 +192,10 @@ const graphMapProto = (function () {
             }
             // if there is no possible connection between nodes, return null. If this happens then the flaw is with the user's design
             // of the graphMap, not the algorithm
-            warn(`No connection exists between ${startCoords} and ${endCoords}.`)
-            return null
+            return {
+                failed: 'noConnectionIssue',
+                message: `No connection exists between ${startCoords} and ${endCoords}.`
+            }
 
             // helper function used to extract (e.g. remove from the list and return) the lowest F cost node
             function retrieveLowestFCostNode(map) {
@@ -223,9 +230,9 @@ const graphMapProto = (function () {
  * Create a new graphMap. Used to represent the map of an institution's pathfinding and destination nodes
  * @returns {Object} The new graphMap
  */
-function createGraphMap() {
+function createGraphMap(nodes = {}) {
     const graphMap = Object.create(graphMapProto)
-    graphMap.nodes = {}
+    graphMap.nodes = nodes
     return graphMap
 }
 

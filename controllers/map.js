@@ -1,3 +1,4 @@
+const databaseAPI = require('./database_api')
 
 /**
  * Renders the 'map.pug' file

@@ -2,6 +2,8 @@ const express = require('express')
 const router = express.Router()
 const controllers = require('../controllers/static-pages')
 
+const databaseAPI = require('../controllers/database_api')
+
 /* GET home page. */
 router.get('/', controllers.institutionList)
 
