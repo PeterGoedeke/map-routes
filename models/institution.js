@@ -18,10 +18,22 @@ const institutionSchema = {
         type: {type: String},
         coordinates: [Number]
     },
-    image: Buffer,
-    graph: Schema.Types.Mixed,
-    cache: Schema.Types.Mixed,
-    buildings: Schema.Types.Mixed
+    image: {
+        type: Buffer,
+        
+    },
+    graph: {
+        type: Schema.Types.Mixed,
+        default: {}
+    },
+    cache: {
+        type: Schema.Types.Mixed,
+        default: {}
+    },
+    buildings: {
+        type: Schema.Types.Mixed,
+        default: {}
+    }
 }
 // institutionSchema.index({location: '2dsphere'})
 
