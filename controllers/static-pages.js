@@ -1,9 +1,15 @@
-const institutionManager = require('./institutionManager.js')
+const databaseAPI = require('../controllers/database_api')
 
 function institutionList(req, res) {
-    const institutions = institutionManager.getList()
-
-    res.render('institutionList.pug', { institutions: institutions })
+    // make this use the database_api
+    // also add comments to all of the stuff and finish the database_api and add it to routes
+    console.log('we are here')
+    databaseAPI.readInstitutionListProperties().then(institutions => {
+        institutions.forEach(i => console.log(i))
+        res.render('institutionList', { institutions: institutions })
+    }).catch(reason => {
+        res.render('error', reason)
+    })
 }
 function aboutUs(req, res) {
 
