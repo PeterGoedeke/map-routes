@@ -20,105 +20,158 @@ function createInstitution(req, res) {
     })
 }
 
-function getInstitutionAnd(f, fieldsDesired = '') {
+function readAllInstitutions(fieldsDesired = '', errorMessage) {
+    return function() {
+        return new Promise((resolve, reject) => {
+            Institution.find({}, fieldsDesired).exec((err, institutions) => {
+                if(err) {
+                    return reject(errorMessage)
+                }
+                return resolve(institutions)
+            })
+        })
+    }
+}
+const readInstitutionListProperties = readAllInstitutions(propertiesString, 'Error retrieving institutions.')
+const readInstitutionListGraphs = readAllInstitutions('graph', 'Error retrieving graphs.')
+
+function deleteInstitution(req, res) {
+    if(!req.params.institutionid) {
+        return res.status(404).json('Institution not found; id required.')
+    }
+    Institution.deleteOne({id: req.params.institutionid}, err => {
+        if(err) return res.status(400).json(err)
+    })
+    res.end()
+}
+
+function readInstitutionAnd(f, fieldsDesired = '') {
     return function(req, res) {
-        if(!req.params.institutionid) {
-            return res.status(404).json({message: 'Institution not found; id required.'})
-        }
-        Institution.findById(req.params.institutionid, fieldsDesired).exec((err, institution) => {
-            if(!institution) {
-                return res.status(404).json({message: 'Institution not found; invalid id.'})
+        return new Promise((resolve, reject) => {
+            if(!req.params.institutionid) {
+                return reject('Institution not found; id required.')
             }
-            else if(err) {
-                return res.status(400).json(err)
-            }
-            req.institution = institution
-            f(req, res)
+            Institution.findById(req.params.institutionid, fieldsDesired).exec((err, institution) => {
+                if(err) {
+                    // this probably means that the id was invalid; e.g. wrong length to be an id
+                    return reject(err)
+                }
+                else if(!institution) {
+                    return reject('Institution not found; invalid id.')
+                }
+                req.institution = institution
+                return resolve(f(req, res))
+            })
         })
     }
 }
 function saveInstitution(req, res) {
-    req.institution.save((err, inst) => {
-        if(err) {
-            res.status(404).json(err)
-        } else {
-            res.status(200).json(inst)
-        }
+    return new Promise((resolve, reject) => {
+        req.institution.save((err, inst) => {
+            if(err) {
+                return reject(err)
+            } else {
+                return resolve(inst)
+            }
+        })
     })
 }
 
-const readInstitutionProperties = getInstitutionAnd((req, res) => {
-    return res.status(200).json(req.institution)
+const readInstitutionProperties = readInstitutionAnd((req, res) => {
+    return req.institution
 }, propertiesString)
 
-const readInstitutionListProperties = (req, res) => {
-    Institution.find({}, propertiesString).exec((err, institutions) => {
-        if(err) {
-            return res.status(404).json({message: 'Error retrieving institutions.'})
+const updateInstitutionProperties = readInstitutionAnd((req, res) => {
+    return new Promise(resolve => {
+        req.institution.name = req.body.name
+        req.institution.description = req.body.description
+        req.institution.type = req.body.type
+        req.institution.location =  {
+            type: 'Point',
+            coordinates: [
+                parseFloat(req.body.lng),
+                parseFloat(req.body.lat)
+            ]
         }
-        return res.status(200).json(req.institutions)
+        return resolve(saveInstitution(req, res))
     })
-}
-
-const updateInstitutionProperties = getInstitutionAnd((req, res) => {
-    req.institution.name = req.body.name
-    req.institution.description = req.body.description
-    req.institution.type = req.body.type
-    req.institution.location =  {
-        type: 'Point',
-        coordinates: [
-            parseFloat(req.body.lng),
-            parseFloat(req.body.lat)
-        ]
-    }
-    saveInstitution(req, res)
 }, propertiesString)
 
 
-const readGraph = getInstitutionAnd((req, res) => {
-    return res.status(200).json(req.institution)
+const readGraph = readInstitutionAnd((req, res) => {
+    return req.institution
 }, 'graph')
 
-const updateGraph = getInstitutionAnd((req, res) => {
+const updateGraph = readInstitutionAnd((req, res) => {
     // validate that the graph is correct; cannot be done in Mongo as the type must be Mixed to support the graph,
     // so no validation is available
-    for(const key in req.body) {
-        if(!req.body[key].properties || !req.body[key].connections) {
-            return res.status(400).json({message: 'Invalid graph.'})
+    return new Promise((resolve, reject) => {
+        for(const key in req.body) {
+            if(!req.body[key].properties || !req.body[key].connections) {
+                return reject('Invalid graph.')
+            }
         }
-    }
-    req.institution.graph = req.body
-    saveInstitution(req, res)
+        req.institution.graph = req.body
+        return resolve(saveInstitution(req, res))
+    })
 }, 'graph')
 
 
-const readBuildings = getInstitutionAnd((req, res) => {
-    return res.status(200).json(req.institution)
+const readBuildings = readInstitutionAnd((req, res) => {
+    return req.institution
 }, 'buildings')
 
-const updateBuildings = getInstitutionAnd((req, res) => {
+const updateBuildings = readInstitutionAnd((req, res) => {
+    // validate that the buildings are correct; cannot be done in Mongo as the type must be Mixed to support the buildings,
+    // so no validation is available
+    return new Promise((resolve, reject) => {
+        for(const key in req.body) {
+            // validate that buildings match the required data
+        }
+        req.institution.buildings = req.body
+        return resolve(saveInstitution(req, res))
+    })
+}, 'buildings')
+
+
+const updateInstitutionImage = readInstitutionAnd((req, res) => {
 
 })
 
 
-const updateInstitutionImage = getInstitutionAnd((req, res) => {
-
+const hasCachedRoute = readInstitutionAnd((req, res) => {
+    return req.institution.cache[req.start + '-' + req.end]
+}, 'cache')
+const cacheRoute = readInstitutionAnd((req, res) => {
+    return new Promise(resolve => {
+        req.institution.cache[req.start + '-' + req.end] = req.fastestRoute
+        req.institution.markModified('cache')
+        return resolve(saveInstitution(req, res))
+    })
+}, 'cache')
+const clearCache = readInstitutionAnd((req, res) => {
+    return new Promise(resolve => {
+        req.institution.cache = {}
+        return resolve(saveInstitution(req, res))
+    })
 })
-
-function cacheRoute() {
-
-}
 
 module.exports = {
     createInstitution,
-
-    readInstitutionProperties,
+    deleteInstitution,
     readInstitutionListProperties,
+    
+    readInstitutionProperties,
     updateInstitutionProperties,
-
+    
     readBuildings,
     updateBuildings,
-
+    
     readGraph,
-    updateGraph
+    updateGraph,
+    readInstitutionListGraphs,
+
+    hasCachedRoute,
+    cacheRoute,
+    clearCache
 }
