@@ -2,6 +2,7 @@ const graphs = require('./graphMap.js')
 const databaseAPI = require('./database_api')
 const warn = require('../warn')
 
+// temporary graph
 const testGraph = graphs.create()
 testGraph.addVertex([10, 0], {letter: 'A'})
 testGraph.addVertex([10, 20], {letter: 'B'})
@@ -15,9 +16,13 @@ testGraph.addEdge([10, 0], [0, 0])
 testGraph.addEdge([10, 0], [5, 10])
 testGraph.addEdge([0, 20], [5, 10])
 
+// the graph manager stores current copies of the institution graphs and allows for interfacing with them. see below as to why
 const graphManager = (function() {
     const graphMaps = {}
 
+    // initialise the graphManagers graphs when the application starts. These are kept in memory so that they can be used
+    // to calculate routes - it would be unnecessarily heavy to request a graph from the database and create a graphMap object
+    // from it every time a route request is made by a client
     databaseAPI.readInstitutionListGraphs().then(graphData => {
         graphData.forEach(data => graphMaps[data._id] = graphs.create(data.graph))
     }).catch(warn)
@@ -54,6 +59,8 @@ const graphManager = (function() {
                 else {
                     // ... if failed, calculate the route, cache, and return to client
                     route = graphMaps[req.params.institutionid].fastestRouteBetween(req.start, req.end)
+
+                    // check that the route was calculated and return the appropriate errors if not
                     if(route.failed) {
                         if(route.failed == 'noConnectionIssue') return res.status(500)
                             .json('There is a problem with the institution map. Please contact your institution to resolve this issue.')
@@ -64,7 +71,7 @@ const graphManager = (function() {
                         else if(route.failed == 'coordsIssue') return res.status(400)
                             .json('Either the start of the end destination are not entered correctly.')
                     }
-
+                    // cache and return the route to the client
                     req.fastestRoute = route
                     databaseAPI.cacheRoute(req, res).then(console.log).catch(console.log)
                     return res.status(200).json(route)
@@ -73,6 +80,7 @@ const graphManager = (function() {
                 return res.status(500).json({message: err})
             })
         },
+        // unfinished method sets the graph of the institution to the temporary testing graph
         updateGraph: function(req, res) {
             req.body = testGraph.nodes
             databaseAPI.updateGraph(req, res).then(val => console.log(val, 5)).catch(val => console.log(val))
