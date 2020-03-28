@@ -1,4 +1,3 @@
-const institutionManager = require('./institutionManager.js')
 const mongoose = require('mongoose')
 const Institution = mongoose.model('Institution')
 const propertiesString = 'name description type location'
