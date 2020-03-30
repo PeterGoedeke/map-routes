@@ -138,3 +138,11 @@ xhr.onload = function () {
     
     L.geoJSON(geoJSONPoly, {}).addTo(map)
 }
+
+
+function send(data) {
+    const xml = new XMLHttpRequest()
+    xml.open('POST', '/')
+    xml.setRequestHeader('Content-Type', 'application/json;charset=UTF-8')
+    xml.send(JSON.stringify(data))
+}
