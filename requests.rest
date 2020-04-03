@@ -1,0 +1,17 @@
+POST https://localhost:3001/test
+content-type: application/json
+
+{
+    "test1": "test",
+    "test2": 5
+}
+
+###
+
+POST https://localhost:3001/register
+content-type: application/json
+
+{
+    "username": "bad",
+    "password": "p"
+}
